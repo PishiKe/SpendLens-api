@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from spendlens.common.models import Currency
 
 GenderChoices = [
   ('Male', 'Male'),
@@ -43,6 +44,7 @@ class CustomUser(AbstractUser):
   verified = models.BooleanField(default=False)
   phone = models.CharField(max_length=15, blank=True, null=True)
   gender = models.CharField(max_length=10, blank=True, choices=GenderChoices)
+  currency = models.ForeignKey(Currency, on_delete=models.PROTECT, blank=True, null=True)
 
   objects = UserManager()
 
