@@ -4,7 +4,7 @@ from . import views
 
 router = DefaultRouter()
 
-router.register('expenses', views.ExpensesViewset, 'expenses')
+router.register('expense', views.ExpenseViewset, 'expense')
 
 urlpatterns = [
 

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     #local
     'spendlens.expenses',
     'spendlens.users',
+    'spendlens.common',
 ]
 
 REST_FRAMEWORK = {
