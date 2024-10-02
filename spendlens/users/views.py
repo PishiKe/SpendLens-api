@@ -23,11 +23,11 @@ class UserViewSet(viewsets.ModelViewSet):
   @action(detail=True, methods=['PATCH'])
   def makeAdmin(self, request, pk):
     if(request.user == 'AnonymousUser'):
-        return Response(data='Not Authenticated', status=401)
+      return Response(data='Not Authenticated', status=401)
 
     authedUser = get_user_model().objects.get(email=request.user)
     if not authedUser.is_staff:
-        return Response(data='Not Authorized', status=401)
+      return Response(data='Not Authorized', status=401)
 
     user = self.get_object()
     user.is_staff = not user.is_staff
@@ -47,12 +47,12 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class UserAuthenticated(views.APIView):
   def get(self, request):
-      # print(type(request.user))
-      if request.user.is_anonymous:
-          return Response(data='Not Authenticated', status=401)
-      else:
-          serialized = serializers.UserSerializer(request.user)
-          return Response(serialized.data, status=200)
+    # print(type(request.user))
+    if request.user.is_anonymous:
+      return Response(data='Not Authenticated', status=401)
+    else:
+      serialized = serializers.UserSerializer(request.user)
+      return Response(serialized.data, status=200)
 
 
 class GroupUser(views.APIView):
@@ -61,45 +61,45 @@ class GroupUser(views.APIView):
     data = request.data
     user =  get_user_model().objects.filter(pk=data['user']).first()
     if user:
-        group = Group.objects.filter(pk=data['group']).first()
-        if group:
-            user.groups.add(group)
-            return Response({
-                'data': {'message': 'User added to group successfully'},
-                'status': status.HTTP_200_OK
-            })
-        else:
-            return Response({
-                'data': {'message': f"The group id: {data['group']} does not exist."},
-                'status': status.HTTP_400_BAD_REQUEST
-            })
-    else:
+      group = Group.objects.filter(pk=data['group']).first()
+      if group:
+        user.groups.add(group)
         return Response({
-            'data': {'message': f"The user id: {data['user']} does not exist."},
+            'data': {'message': 'User added to group successfully'},
+            'status': status.HTTP_200_OK
+        })
+      else:
+        return Response({
+            'data': {'message': f"The group id: {data['group']} does not exist."},
             'status': status.HTTP_400_BAD_REQUEST
         })
+    else:
+      return Response({
+        'data': {'message': f"The user id: {data['user']} does not exist."},
+        'status': status.HTTP_400_BAD_REQUEST
+      })
 
   def delete(self, request):
     data = request.data
     user =  get_user_model().objects.filter(pk=data['user']).first()
     if user:
-        group = Group.objects.filter(pk=data['group']).first()
-        if group:
-            user.groups.remove(group)
-            return Response({
-                'data': {'message': 'User removed from group successfully'},
-                'status': status.HTTP_200_OK
-            })
-        else:
-            return Response({
-                'data': {'message': f"The group id: {data['group']} does not exist."},
-                'status': status.HTTP_400_BAD_REQUEST
-            })
-    else:
+      group = Group.objects.filter(pk=data['group']).first()
+      if group:
+        user.groups.remove(group)
         return Response({
-            'data': {'message': f"The user id: {data['user']} does not exist."},
+            'data': {'message': 'User removed from group successfully'},
+            'status': status.HTTP_200_OK
+        })
+      else:
+        return Response({
+            'data': {'message': f"The group id: {data['group']} does not exist."},
             'status': status.HTTP_400_BAD_REQUEST
         })
+    else:
+      return Response({
+          'data': {'message': f"The user id: {data['user']} does not exist."},
+          'status': status.HTTP_400_BAD_REQUEST
+      })
 
 class GroupPermission(views.APIView):
 
@@ -140,42 +140,40 @@ class PasswordResetView(views.APIView):
 class ResetPassword(views.APIView):
 
   def post(self, request):
-      data = request.data
+    data = request.data
 
-      try:
-        token = models.PassResetToken.objects.get(
-            token=data['token'])
-        if token and token.is_valid():
-          user = get_user_model().objects.get(pk=token.user.pk)
-          if user:
-            user.password = make_password(data['password'])
-            user.save()
-            token.reset = True
-            token.save()
-            return Response(data="Your Password has been reset", status=201)
-          else:
-            return Response(data={"message":f"The email {data['email']} does not exist."}, status=400)
-        return Response(data={"message": f"The link has expired or is invalid."}, status=400)
-      except Exception as e:
-        return Response(data={"message": "The link has expired or is invalid."}, status=400)
+    try:
+      token = models.PassResetToken.objects.get(
+          token=data['token'])
+      if token and token.is_valid():
+        user = get_user_model().objects.get(pk=token.user.pk)
+        if user:
+          user.password = make_password(data['password'])
+          user.save()
+          token.reset = True
+          token.save()
+          return Response(data="Your Password has been reset", status=201)
+        else:
+          return Response(data={"message":f"The email {data['email']} does not exist."}, status=400)
+      return Response(data={"message": f"The link has expired or is invalid."}, status=400)
+    except Exception as e:
+      return Response(data={"message": "The link has expired or is invalid."}, status=400)
 
 class ChangePassword(views.APIView):
 
     def post(self, request):
       data = request.data
       try:
+        user = get_user_model().objects.get(pk=data['id'])
 
-
-          user = get_user_model().objects.get(pk=data['id'])
-
-          if user:
-              user.password = make_password(data['password'])
-              user.save()
-              return Response(data="Your Password has been reset", status=201)
-          else:
-                  return Response(data=f"The email {data['email']} does not exist.", status=400)
+        if user:
+          user.password = make_password(data['password'])
+          user.save()
+          return Response(data="Your Password has been reset", status=201)
+        else:
+          return Response(data=f"The email {data['email']} does not exist.", status=400)
       except:
-          return Response(data=f"Id and password are required.", status=400)
+        return Response(data=f"Id and password are required.", status=400)
 
 
 class VerifyAccountRequest(views.APIView):
@@ -184,16 +182,16 @@ class VerifyAccountRequest(views.APIView):
       data = request.data
       user = get_user_model().objects.get(email=data['email'])
       if user:
-          if user.verified is not True:
-              models.VerifyToken.objects.create(
-                  token=secrets.token_hex(32),
-                  user=user
-              )
-              return Response(data="Check Your Email for a link", status=201)
-          else:
-              return Response(data="Your Account is already verified!", status=200)
+        if user.verified is not True:
+          models.VerifyToken.objects.create(
+            token=secrets.token_hex(32),
+            user=user
+          )
+          return Response(data="Check Your Email for a link", status=201)
+        else:
+          return Response(data="Your Account is already verified!", status=200)
       else:
-          return Response(data=f"The email {data['email']} does not exist.", status=400)
+        return Response(data=f"The email {data['email']} does not exist.", status=400)
 
 
 class VerifyAccountConfirm(views.APIView):
